@@ -1,0 +1,28 @@
+name: "hemsida"
+
+networks:
+  awesomesauce:
+
+
+services:
+  static:
+    image: nginx:alpine
+    container_name: static_server #cloudflare url pga docker container
+    volumes:
+      - .:/usr/share/nginx/html:ro #read only
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - awesomesauce
+
+  cloudflaretunnel:
+    container_name: awesomesauce-cloudflaretunnel
+    image: cloudflare/cloudflared
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    networks:
+      - awesomesauce
